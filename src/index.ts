@@ -29,6 +29,12 @@ import moment from "moment-timezone";
     console.log(
       `Syncing ${debit._id} '${debit.description}' (${debit.amount})`
     );
+
+    const cleanDescription = debit.description.replaceAll(
+      /^[a-zA-Z0-9 \-\_]/g,
+      ""
+    );
+
     await Akahu.payments.create(akahuEnv.AKAHU_USER_TOKEN, {
       amount: debit.amount,
       from: runtimeEnv.BANK_AKAHU_ID,
@@ -38,8 +44,8 @@ import moment from "moment-timezone";
       },
       meta: {
         source: {
-          code: "Repay",
-          reference: "Booster",
+          code: cleanDescription.slice(0, 12).trim() || "Unknown",
+          reference: cleanDescription.slice(12).trim() || "Repayment",
         },
         destination: {
           particulars: "Repayment",
