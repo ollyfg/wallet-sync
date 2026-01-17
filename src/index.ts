@@ -20,7 +20,7 @@ import moment from "moment-timezone";
   );
   const pendingTransactions = await Akahu.accounts.listPendingTransactions(
     akahuEnv.AKAHU_USER_TOKEN,
-    runtimeEnv.WALLET_AKAHU_ID,
+    runtimeEnv.WALLET_AKAHU_ID
   );
 
   const todaysTransactions = [
@@ -36,11 +36,13 @@ import moment from "moment-timezone";
 
   for (const debit of debits) {
     console.log(
-      `Syncing ${"_id" in debit ? debit._id : "Pending"} '${debit.description}' (${debit.amount})`
+      `Syncing ${"_id" in debit ? debit._id : "Pending"} '${
+        debit.description
+      }' (${debit.amount})`
     );
 
     const cleanDescription = debit.description.replaceAll(
-      /^[a-zA-Z0-9 \-\_]/g,
+      /[^a-zA-Z0-9 \-\_]/g,
       ""
     );
 
