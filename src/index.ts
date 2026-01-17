@@ -24,7 +24,7 @@ import moment from "moment-timezone";
   );
 
   const todaysTransactions = [
-    ...settledTransactions,
+    // ...settledTransactions,
     ...pendingTransactions.filter((x) => x.date >= oneDayAgo && x.date < now),
   ];
 
