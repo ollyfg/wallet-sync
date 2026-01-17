@@ -10,7 +10,7 @@ import moment from "moment-timezone";
   const oneDayAgo = moment(now).subtract(1, "day").toISOString();
 
   // Assume that today's transactions fit into one page (currently 100 transactions)
-  const { items: settledTransactions } = await Akahu.accounts.listTransactions(
+  const { items: todaysTransactions } = await Akahu.accounts.listTransactions(
     akahuEnv.AKAHU_USER_TOKEN,
     runtimeEnv.WALLET_AKAHU_ID,
     {
@@ -18,15 +18,6 @@ import moment from "moment-timezone";
       end: now,
     }
   );
-  const pendingTransactions = await Akahu.accounts.listPendingTransactions(
-    akahuEnv.AKAHU_USER_TOKEN,
-    runtimeEnv.WALLET_AKAHU_ID
-  );
-
-  const todaysTransactions = [
-    ...settledTransactions,
-    ...pendingTransactions.filter((x) => x.date >= oneDayAgo && x.date < now),
-  ];
 
   const debits = todaysTransactions.filter((x) => x.amount < 0);
   const credits = todaysTransactions.filter((x) => x.amount > 0);
