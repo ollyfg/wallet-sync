@@ -36,7 +36,7 @@ import moment from "moment-timezone";
     );
 
     await Akahu.payments.create(akahuEnv.AKAHU_USER_TOKEN, {
-      amount: debit.amount,
+      amount: Math.abs(debit.amount),
       from: runtimeEnv.BANK_AKAHU_ID,
       to: {
         name: runtimeEnv.WALLET_ACCOUNT_NAME,
