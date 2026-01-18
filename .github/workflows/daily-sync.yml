@@ -1,7 +1,7 @@
 name: Daily Sync
 on:
-  schedule:
-    - cron: "30 10 * * *" # Run at 10:30 or 11:30 depending on daylight savings
+  #schedule:
+  #  - cron: "30 10 * * *" # Run at 10:30 or 11:30 depending on daylight savings
   workflow_dispatch: # Allow manual triggering
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run scraper
+      - name: Run sync
         env:
           WALLET_ACCOUNT_NUMBER: ${{ secrets.WALLET_ACCOUNT_NUMBER }}
           WALLET_ACCOUNT_NAME: ${{ secrets.WALLET_ACCOUNT_NAME }}
