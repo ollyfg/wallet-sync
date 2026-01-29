@@ -19,7 +19,7 @@ import moment from "moment-timezone";
     }
   );
 
-  const debits = todaysTransactions.filter((x) => x.amount < 0);
+  const debits = todaysTransactions.filter((x) => x.amount < 0 && !["TRANSFER", "PAYMENT"].includes(x.type));
   const credits = todaysTransactions.filter((x) => x.amount > 0);
   console.log(
     `Found ${todaysTransactions.length} transactions today (${debits.length} debits, ${credits.length} credits)`
