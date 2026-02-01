@@ -1,4 +1,4 @@
-import { runtimeEnv, akahuEnv, RuntimeEnv } from "./env";
+import { runtimeEnv, akahuEnv } from "./env";
 import { AkahuClient } from "akahu";
 import moment from "moment-timezone";
 
@@ -19,17 +19,18 @@ import moment from "moment-timezone";
     }
   );
 
-  const debits = todaysTransactions.filter((x) => x.amount < 0 && !["TRANSFER", "PAYMENT"].includes(x.type));
+  const debits = todaysTransactions.filter((x) => x.amount < 0);
+  const toRefund = debits.filter(
+    (x) => !["TRANSFER", "PAYMENT"].includes(x.type)
+  );
   const credits = todaysTransactions.filter((x) => x.amount > 0);
   console.log(
-    `Found ${todaysTransactions.length} transactions today (${debits.length} debits, ${credits.length} credits)`
+    `Found ${todaysTransactions.length} transactions today (${debits.length} debits, ${credits.length} credits), ${toRefund.length} should be refunded.`
   );
 
-  for (const debit of debits) {
+  for (const debit of toRefund) {
     console.log(
-      `Syncing ${"_id" in debit ? debit._id : "Pending"} '${
-        debit.description
-      }' (${debit.amount})`
+      `Syncing ${debit._id} '${debit.description}' (${debit.amount})`
     );
 
     const cleanDescription = debit.description.replaceAll(
@@ -37,23 +38,27 @@ import moment from "moment-timezone";
       ""
     );
 
-    await Akahu.payments.create(akahuEnv.AKAHU_USER_TOKEN, {
-      amount: Math.abs(debit.amount),
-      from: runtimeEnv.BANK_AKAHU_ID,
-      to: {
-        name: runtimeEnv.WALLET_ACCOUNT_NAME,
-        account_number: runtimeEnv.WALLET_ACCOUNT_NUMBER,
-      },
-      meta: {
-        source: {
-          code: cleanDescription.slice(0, 12).trim() || "Unknown",
-          reference: cleanDescription.slice(12).trim() || "Repayment",
+    if (runtimeEnv.DRY_RUN) {
+      console.log("Skipping because this is a dry run");
+    } else {
+      await Akahu.payments.create(akahuEnv.AKAHU_USER_TOKEN, {
+        amount: Math.abs(debit.amount),
+        from: runtimeEnv.BANK_AKAHU_ID,
+        to: {
+          name: runtimeEnv.WALLET_ACCOUNT_NAME,
+          account_number: runtimeEnv.WALLET_ACCOUNT_NUMBER,
         },
-        destination: {
-          particulars: "Repayment",
+        meta: {
+          source: {
+            code: cleanDescription.slice(0, 12).trim() || "Unknown",
+            reference: cleanDescription.slice(12).trim() || "Repayment",
+          },
+          destination: {
+            particulars: "Repayment",
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   console.log("Done for the day.");

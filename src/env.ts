@@ -5,6 +5,7 @@ export const RuntimeEnv = z.object({
   WALLET_ACCOUNT_NAME: z.string(),
   WALLET_AKAHU_ID: z.string(),
   BANK_AKAHU_ID: z.string(),
+  DRY_RUN: z.enum(["true", "True", "yes", "y", "on"]).optional(),
 });
 export type RuntimeEnv = z.infer<typeof RuntimeEnv>;
 
