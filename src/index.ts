@@ -10,32 +10,44 @@ import moment from "moment-timezone";
   const oneDayAgo = moment(now).subtract(1, "day").toISOString();
 
   // Assume that today's transactions fit into one page (currently 100 transactions)
-  const { items: todaysTransactions } = await Akahu.accounts.listTransactions(
-    akahuEnv.AKAHU_USER_TOKEN,
-    runtimeEnv.WALLET_AKAHU_ID,
-    {
-      start: oneDayAgo,
-      end: now,
-    }
-  );
+  const [{ items: settledTransactions }, pendingTransactions] =
+    await Promise.all([
+      Akahu.accounts.listTransactions(
+        akahuEnv.AKAHU_USER_TOKEN,
+        runtimeEnv.WALLET_AKAHU_ID,
+        {
+          start: oneDayAgo,
+          end: now,
+        },
+      ),
+      Akahu.accounts.listPendingTransactions(
+        akahuEnv.AKAHU_USER_TOKEN,
+        runtimeEnv.WALLET_AKAHU_ID,
+      ),
+    ]);
+
+  const todaysTransactions = [
+    ...settledTransactions,
+    ...pendingTransactions.filter(
+      (txn) => txn.date > oneDayAgo && txn.date <= now,
+    ),
+  ];
 
   const debits = todaysTransactions.filter((x) => x.amount < 0);
-  const toRefund = debits.filter(
-    (x) => !["TRANSFER", "PAYMENT"].includes(x.type)
-  );
+  const toRefund = debits.filter((x) => !["TRANSFER"].includes(x.type));
   const credits = todaysTransactions.filter((x) => x.amount > 0);
   console.log(
-    `Found ${todaysTransactions.length} transactions today (${debits.length} debits, ${credits.length} credits), ${toRefund.length} should be refunded.`
+    `Found ${todaysTransactions.length} transactions today (${debits.length} debits, ${credits.length} credits), ${pendingTransactions.length} pending. ${toRefund.length} should be refunded.`,
   );
 
   for (const debit of toRefund) {
     console.log(
-      `Syncing ${debit._id} '${debit.description}' (${debit.amount})`
+      `Syncing ${"_id" in debit ? debit._id : "Pending"} '${debit.description}' (${debit.amount})`,
     );
 
     const cleanDescription = debit.description.replaceAll(
       /[^a-zA-Z0-9 \-\_]/g,
-      ""
+      "",
     );
 
     if (runtimeEnv.DRY_RUN) {

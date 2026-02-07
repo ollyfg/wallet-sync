@@ -9,7 +9,7 @@ import { AkahuClient } from "akahu";
 
   const { items: transactions } = await Akahu.accounts.listTransactions(
     akahuEnv.AKAHU_USER_TOKEN,
-    runtimeEnv.WALLET_AKAHU_ID
+    runtimeEnv.WALLET_AKAHU_ID,
   );
 
   // Show this many transactions
@@ -21,7 +21,24 @@ import { AkahuClient } from "akahu";
         .tz(txn.date, "Pacific/Auckland")
         .format("YYYY/MM/DD")} ${txn.amount
         .toFixed(2)
-        .padEnd(9)} ${txn.type.padEnd(10)} ${txn.description}`
+        .padEnd(9)} ${txn.type.padEnd(10)} ${txn.description}`,
     );
+  }
+
+  const pending = await Akahu.accounts.listPendingTransactions(
+    akahuEnv.AKAHU_USER_TOKEN,
+    runtimeEnv.WALLET_AKAHU_ID,
+  );
+  if (pending.length) {
+    console.log("Pending transactions:");
+    for (const txn of pending) {
+      console.log(
+        `${moment
+          .tz(txn.date, "Pacific/Auckland")
+          .format("YYYY/MM/DD")} ${txn.amount
+          .toFixed(2)
+          .padEnd(9)} ${txn.type.padEnd(10)} ${txn.description}`,
+      );
+    }
   }
 })();

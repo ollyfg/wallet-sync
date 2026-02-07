@@ -5,6 +5,7 @@
   "scripts": {
     "list-accounts": "tsx scripts/list-accounts.ts",
     "list-transactions": "tsx scripts/list-transactions.ts",
+    "refresh": "tsx scripts/refresh.ts",
     "dry-run": "tsx scripts/dry-run.ts",
     "sync": "tsx src/index.ts"
   },
